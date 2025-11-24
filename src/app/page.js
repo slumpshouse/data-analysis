@@ -1,7 +1,8 @@
-'use client';
+"use client";
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useFile } from './FileProvider';
 
 export default function Home() {
   const [dragActive, setDragActive] = useState(false);
@@ -17,45 +18,35 @@ export default function Home() {
     }
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const text = ev.target.result;
-        const payload = { name: file.name, type: file.type, text };
-        try {
-          sessionStorage.setItem('uploadedFile', JSON.stringify(payload));
-        } catch (err) {
-          console.error('sessionStorage error', err);
-        }
+      try {
+        await uploadAndParse(file);
         router.push('/preview');
-      };
-      reader.readAsText(file);
+      } catch (err) {
+        console.error('file drop parse error', err);
+      }
     }
   };
 
   const fileInputRef = useRef(null);
 
-  const handleFileInput = (e) => {
+  const { uploadAndParse } = useFile();
+
+  const handleFileInput = async (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const text = ev.target.result;
-        const payload = { name: file.name, type: file.type, text };
-        try {
-          sessionStorage.setItem('uploadedFile', JSON.stringify(payload));
-        } catch (err) {
-          console.error('sessionStorage error', err);
-        }
+      try {
+        await uploadAndParse(file);
         router.push('/preview');
-      };
-      reader.readAsText(file);
+      } catch (err) {
+        console.error('file input parse error', err);
+      }
     }
   };
 

@@ -2,32 +2,47 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
-import Papa from "papaparse";
+import { useFile } from '../FileProvider';
 
 export default function PreviewPage() {
   const router = useRouter();
+  const { uploadedFile, parsed } = useFile();
   const [fileInfo, setFileInfo] = useState(null);
   const [rows, setRows] = useState([]);
   const [columns, setColumns] = useState([]);
   const [stats, setStats] = useState([]);
 
   useEffect(() => {
+    // prefer provider-parsed data
+    if (parsed && parsed.rows && parsed.columns && parsed.rows.length > 0) {
+      setFileInfo({ name: uploadedFile?.name || '(uploaded)' });
+      setRows(parsed.rows.slice(0, 100));
+      setColumns(parsed.columns || Object.keys(parsed.rows[0] || {}));
+      setStats(parsed.stats || []);
+      return;
+    }
+
+    // fallback to sessionStorage if provider empty
     const raw = sessionStorage.getItem("uploadedFile");
     if (!raw) return;
     try {
-      const parsed = JSON.parse(raw);
-      setFileInfo({ name: parsed.name });
-
-      // If CSV, parse with Papa
-      if (parsed.name && parsed.name.toLowerCase().endsWith(".csv")) {
-        const res = Papa.parse(parsed.text, { header: true, skipEmptyLines: true });
-        const data = res.data || [];
-        setRows(data.slice(0, 100));
-        setColumns(res.meta.fields || Object.keys(data[0] || {}));
-        computeStats(data, res.meta.fields || Object.keys(data[0] || {}));
-      } else if (parsed.name && parsed.name.toLowerCase().endsWith(".json")) {
+      const parsedRaw = JSON.parse(raw);
+      setFileInfo({ name: parsedRaw.name });
+      if (parsedRaw.name && parsedRaw.name.toLowerCase().endsWith(".csv")) {
+        // parse quickly with built-in CSV fallback
         try {
-          const obj = JSON.parse(parsed.text);
+          const Papa = require('papaparse');
+          const res = Papa.parse(parsedRaw.text, { header: true, skipEmptyLines: true });
+          const data = res.data || [];
+          setRows(data.slice(0, 100));
+          setColumns(res.meta.fields || Object.keys(data[0] || {}));
+          computeStats(data, res.meta.fields || Object.keys(data[0] || {}));
+        } catch (err) {
+          console.error('fallback CSV parse error', err);
+        }
+      } else if (parsedRaw.name && parsedRaw.name.toLowerCase().endsWith(".json")) {
+        try {
+          const obj = JSON.parse(parsedRaw.text);
           const data = Array.isArray(obj) ? obj : [obj];
           setRows(data.slice(0, 100));
           setColumns(Object.keys(data[0] || {}));
@@ -36,15 +51,14 @@ export default function PreviewPage() {
           console.error("JSON parse error", err);
         }
       } else {
-        // Fallback: show as single-field text
-        setRows([{ content: parsed.text.slice(0, 200) }]);
+        setRows([{ content: parsedRaw.text.slice(0, 200) }]);
         setColumns(["content"]);
-        computeStats([{ content: parsed.text }], ["content"]);
+        computeStats([{ content: parsedRaw.text }], ["content"]);
       }
     } catch (err) {
       console.error("uploadedFile parse error", err);
     }
-  }, []);
+  }, [parsed, uploadedFile]);
 
   function computeStats(data, cols) {
     const statsOut = cols.map((c) => {

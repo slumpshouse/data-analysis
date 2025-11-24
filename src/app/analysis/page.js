@@ -77,66 +77,76 @@ export default function AnalysisPage() {
         {/* Data Visualizations */}
         <div className="bg-white rounded-lg p-6 mb-6 shadow-sm">
           <h3 className="font-bold text-gray-800 mb-4">Data Visualizations:</h3>
-          
+
           <div className="grid grid-cols-3 gap-6">
             {/* Bar Chart */}
             <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">Bar Chart:</p>
-              <p className="text-xs text-gray-600 mb-2">Quality Metrics</p>
-              <div className="flex items-end justify-around h-32 border-b border-l border-gray-300 pb-1 pl-1">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-8 bg-gray-800" style={{ height: '98%' }}></div>
-                  <span className="text-xs">98%</span>
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <p className="text-sm font-semibold text-gray-700">Bar Chart</p>
+                  <p className="text-xs text-gray-500">Quality Metrics</p>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-8 bg-gray-800" style={{ height: '90%' }}></div>
-                  <span className="text-xs">90%</span>
+                <div className="text-right text-xs text-gray-600">Top metrics</div>
+              </div>
+
+              <div className="flex items-end justify-between h-36 border-b border-l border-gray-200 pb-1 pl-1">
+                <div className="flex flex-col items-center gap-2 w-1/5">
+                  <div className="w-full bg-teal-700 rounded-t" style={{ height: '98%' }}></div>
+                  <span className="text-xs">Completeness<br/>98%</span>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-8 bg-gray-800" style={{ height: '88%' }}></div>
-                  <span className="text-xs">88%</span>
+                <div className="flex flex-col items-center gap-2 w-1/5">
+                  <div className="w-full bg-amber-500 rounded-t" style={{ height: '90%' }}></div>
+                  <span className="text-xs">Consistency<br/>90%</span>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-8 bg-gray-800" style={{ height: '80%' }}></div>
-                  <span className="text-xs">80%</span>
+                <div className="flex flex-col items-center gap-2 w-1/5">
+                  <div className="w-full bg-rose-500 rounded-t" style={{ height: '88%' }}></div>
+                  <span className="text-xs">Accuracy<br/>88%</span>
+                </div>
+                <div className="flex flex-col items-center gap-2 w-1/5">
+                  <div className="w-full bg-gray-400 rounded-t" style={{ height: '80%' }}></div>
+                  <span className="text-xs">Validity<br/>80%</span>
                 </div>
               </div>
-              <p className="text-xs text-gray-600 text-center mt-2">Comp Cons Acc Val</p>
+
+              <p className="text-xs text-gray-500 text-center mt-2">Completeness · Consistency · Accuracy · Validity</p>
             </div>
 
             {/* Pie Chart */}
             <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">Pie Chart:</p>
-              <p className="text-xs text-gray-600 mb-2">Data Types</p>
-              <div className="flex items-center justify-center h-32">
-                <div className="relative w-24 h-24 rounded-full overflow-hidden" style={{ background: 'conic-gradient(#1f2937 0% 60%, #d1d5db 60% 100%)' }}>
+              <div className="mb-2">
+                <p className="text-sm font-semibold text-gray-700">Pie Chart</p>
+                <p className="text-xs text-gray-500">Data Types</p>
+              </div>
+
+              <div className="flex items-center justify-center h-36">
+                <div className="relative w-28 h-28 rounded-full overflow-hidden" style={{ background: 'conic-gradient(#111827 0% 60%, #d1d5db 60% 85%, #f97316 85% 100%)' }}>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="bg-white rounded-full w-12 h-12"></div>
                   </div>
                 </div>
               </div>
-              <div className="flex justify-center gap-3 mt-2 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-gray-800"></div>
-                  <span>Text</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-gray-300"></div>
-                  <span>Int</span>
-                </div>
+
+              <div className="mt-3 flex flex-col items-start gap-1 text-xs text-gray-700">
+                <div className="flex items-center gap-2"><span className="w-3 h-3 bg-gray-900 inline-block rounded-sm"></span> Text (60%)</div>
+                <div className="flex items-center gap-2"><span className="w-3 h-3 bg-gray-300 inline-block rounded-sm"></span> Numeric (25%)</div>
+                <div className="flex items-center gap-2"><span className="w-3 h-3 bg-orange-400 inline-block rounded-sm"></span> Dates/Other (15%)</div>
               </div>
             </div>
 
             {/* Column Issues */}
             <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">Column Issues:</p>
-              <div className="border border-gray-300 rounded p-2 h-32 overflow-y-auto text-xs">
-                <ul className="space-y-1">
-                  <li>• Name: 2</li>
-                  <li>• Age: 6</li>
-                  <li>• Email: 0</li>
-                  <li>• ID: 0</li>
-                  <li>• City: 0</li>
+              <div className="mb-2">
+                <p className="text-sm font-semibold text-gray-700">Column Issues</p>
+                <p className="text-xs text-gray-500">Top problem columns</p>
+              </div>
+
+              <div className="border border-gray-200 rounded p-3 h-36 overflow-y-auto text-sm text-gray-800">
+                <ul className="space-y-2">
+                  <li className="flex justify-between"><span>Name</span><span className="text-xs text-gray-600">2 missing</span></li>
+                  <li className="flex justify-between"><span>Age</span><span className="text-xs text-gray-600">6 missing, 4 outliers</span></li>
+                  <li className="flex justify-between"><span>Email</span><span className="text-xs text-gray-600">0 issues</span></li>
+                  <li className="flex justify-between"><span>ID</span><span className="text-xs text-gray-600">0 issues</span></li>
+                  <li className="flex justify-between"><span>City</span><span className="text-xs text-gray-600">0 issues</span></li>
                 </ul>
               </div>
             </div>
