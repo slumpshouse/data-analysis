@@ -1,0 +1,31 @@
+id,name,age,email,city
+1,Alice,34,alice@example.com,Seattle
+2,Bob,45,bob@example.com,Portland
+3,Carol,,carol@example.com,Seattle
+4,Dan,150,dan@example.com,New York
+5,Eve,29,,San Francisco
+6,Frank,52,frank@example.com,Chicago
+7,Grace,41,grace@example.com,Boston
+8,Heidi,27,heidi@example.com,Los Angeles
+9,Ivan,38,ivan@example.com,Miami
+10,Judy,23,judy@example.com,Denver
+11,Kate,31,kate@example.com,Seattle
+12,Leo,60,leo@example.com,Portland
+13,Mallory,22,,San Francisco
+14,Niaj,0,niaj@example.com,New York
+15,Olivia,99,olivia@example.com,Chicago
+16,Pat,120,pat@example.com,Boston
+17,Quinn,35,quinn@example.com,Los Angeles
+18,Ruth,28,,Miami
+19,Sam,47,sam@example.com,Denver
+20,Ted,54,ted@example.com,Seattle
+21,Uma,33,uma@example.com,Portland
+22,Vic,40,vic@example.com,San Francisco
+23,Walt,27,walt@example.com,New York
+24,Xena,36,xena@example.com,Chicago
+25,Yara,44,yara@example.com,Boston
+26,Zane,19,zane@example.com,Los Angeles
+27,Aaron,55,aaron@example.com,Miami
+28,Bella,32,bella@example.com,Denver
+29,Carl,48,,Seattle
+30,Dina,26,dina@example.com,Portland

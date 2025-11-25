@@ -1,188 +1,142 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useFile } from '../FileProvider';
+import { computeQuality } from '../../lib/dataAnalysis';
+import { generateInsights } from '../../lib/aiIntegration';
+import DataVisualizationsWrapper from "./DataVisualizationsWrapper";
+
 export default function AnalysisPage() {
+  const { parsed } = useFile();
+  const [metrics, setMetrics] = useState(null);
+  const [insights, setInsights] = useState([]);
+  const [insightError, setInsightError] = useState("");
+  const [showInsights, setShowInsights] = useState(false);
+
+  useEffect(() => {
+    if (!parsed || !parsed.columns) return;
+    const m = computeQuality(parsed);
+    setMetrics(m);
+    setInsightError("");
+    // Merge metrics into parsed for the analysis payload
+    const analysis = { ...parsed, metrics: m };
+    generateInsights(analysis)
+      .then(setInsights)
+      .catch((e) => {
+        console.warn('insights generation failed', e);
+        setInsights([]);
+        setInsightError(e?.message || 'Failed to fetch AI insights.');
+      });
+  }, [parsed]);
+
   return (
-    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50 flex flex-col items-center py-10">
       {/* Navigation Bar */}
-      <nav className="bg-blue-100 shadow-sm">
-        <div className="max-w-[600px] mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-teal-500 font-bold text-lg">[ Logo ]</span>
-              <span className="text-gray-700 font-medium">Data Quality Analysis</span>
-            </div>
-            <div className="flex gap-6 text-gray-700">
-              <a href="/" className="hover:text-teal-500">[ Home ]</a>
-              <a href="#" className="hover:text-teal-500">[ About ]</a>
-              <a href="/details" className="hover:text-teal-500">[ Docs ]</a>
-            </div>
-          </div>
+      <nav className="bg-yellow-100/80 shadow-md rounded-2xl px-8 py-4 mb-8 border-2 border-yellow-200/60 w-full max-w-2xl mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-pink-500 font-extrabold text-xl drop-shadow">[ Logo ]</span>
+          <span className="text-gray-800 font-bold tracking-wide text-lg">Data Quality Analysis</span>
+        </div>
+        <div className="flex gap-6 text-gray-700 font-semibold">
+          <a href="/" className="hover:text-pink-500 transition">[ Home ]</a>
+          <a href="#" className="hover:text-pink-500 transition">[ About ]</a>
+          <a href="/details" className="hover:text-pink-500 transition">[ Docs ]</a>
         </div>
       </nav>
 
       {/* Main Container */}
-      <div className="max-w-[600px] mx-auto p-6">
-        
+      <div className="w-full max-w-2xl mx-auto p-6 bg-white/80 rounded-3xl shadow-xl border-2 border-yellow-100/60">
         {/* Quality Score and Metrics */}
-        <div className="grid grid-cols-[140px_1fr] gap-4 mb-6">
+        <div className="grid grid-cols-[140px_1fr] gap-4 mb-6 items-center">
           {/* Big Score Box */}
-          <div className="bg-orange-400 rounded-2xl shadow-lg flex items-center justify-center">
-            <span className="text-white text-6xl font-bold">85</span>
+          <div className="bg-pink-400 rounded-2xl shadow-lg flex items-center justify-center border-4 border-pink-200/60" style={{ minHeight: 120, minWidth: 120 }}>
+            <span className="text-white text-7xl font-extrabold drop-shadow" style={{ fontSize: 72 }}>{metrics ? metrics.score : '—'}</span>
           </div>
 
           {/* Quality Metrics */}
-          <div className="bg-blue-100 rounded-lg p-4 shadow-sm">
-            <h3 className="font-bold text-gray-800 mb-3 text-sm">Quality Metrics:</h3>
-            
-            <div className="space-y-2">
-              {/* Completeness */}
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-700">Completeness:</span>
-                  <span className="text-gray-700">98%</span>
-                </div>
-                <div className="w-full bg-gray-300 rounded-full h-2">
-                  <div className="bg-gray-800 h-2 rounded-full" style={{ width: '98%' }}></div>
-                </div>
-                <p className="text-xs text-gray-600 mt-1">• 7 missing values across 2 columns</p>
+          <div className="bg-yellow-50 rounded-xl p-4 shadow border-2 border-yellow-100/60">
+            <h3 className="font-bold text-gray-800 mb-3 text-sm tracking-wide">Quality Metrics:</h3>
+            {metrics ? (
+              <div className="space-y-2">
+                <Metric label="Completeness" value={metrics.completeness} note={`${metrics.totalMissing} missing values`} />
+                <Metric label="Consistency" value={metrics.consistency} note={`${metrics.colsCount} columns checked`} />
+                <Metric label="Accuracy" value={metrics.accuracy} note={`${metrics.outlierCount} outliers detected`} />
               </div>
-
-              {/* Consistency */}
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-700">Consistency:</span>
-                  <span className="text-gray-700">90%</span>
-                </div>
-                <div className="w-full bg-gray-300 rounded-full h-2">
-                  <div className="bg-gray-800 h-2 rounded-full" style={{ width: '90%' }}></div>
-                </div>
-                <p className="text-xs text-gray-600 mt-1">• 1 format variations in 'Email' field</p>
-              </div>
-
-              {/* Accuracy */}
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-700">Accuracy:</span>
-                  <span className="text-gray-700">88%</span>
-                </div>
-                <div className="w-full bg-gray-300 rounded-full h-2">
-                  <div className="bg-gray-800 h-2 rounded-full" style={{ width: '88%' }}></div>
-                </div>
-                <p className="text-xs text-gray-600 mt-1">• 1 outlier detected in 'Age'</p>
-              </div>
-            </div>
+            ) : (
+              <p className="text-sm text-gray-600">Upload a dataset to see metrics.</p>
+            )}
           </div>
         </div>
 
-        {/* Data Visualizations */}
-        <div className="bg-white rounded-lg p-6 mb-6 shadow-sm">
-          <h3 className="font-bold text-gray-800 mb-4">Data Visualizations:</h3>
-
-          <div className="grid grid-cols-3 gap-6">
-            {/* Bar Chart */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <p className="text-sm font-semibold text-gray-700">Bar Chart</p>
-                  <p className="text-xs text-gray-500">Quality Metrics</p>
-                </div>
-                <div className="text-right text-xs text-gray-600">Top metrics</div>
-              </div>
-
-              <div className="flex items-end justify-between h-36 border-b border-l border-gray-200 pb-1 pl-1">
-                <div className="flex flex-col items-center gap-2 w-1/5">
-                  <div className="w-full bg-teal-700 rounded-t" style={{ height: '98%' }}></div>
-                  <span className="text-xs">Completeness<br/>98%</span>
-                </div>
-                <div className="flex flex-col items-center gap-2 w-1/5">
-                  <div className="w-full bg-amber-500 rounded-t" style={{ height: '90%' }}></div>
-                  <span className="text-xs">Consistency<br/>90%</span>
-                </div>
-                <div className="flex flex-col items-center gap-2 w-1/5">
-                  <div className="w-full bg-rose-500 rounded-t" style={{ height: '88%' }}></div>
-                  <span className="text-xs">Accuracy<br/>88%</span>
-                </div>
-                <div className="flex flex-col items-center gap-2 w-1/5">
-                  <div className="w-full bg-gray-400 rounded-t" style={{ height: '80%' }}></div>
-                  <span className="text-xs">Validity<br/>80%</span>
-                </div>
-              </div>
-
-              <p className="text-xs text-gray-500 text-center mt-2">Completeness · Consistency · Accuracy · Validity</p>
-            </div>
-
-            {/* Pie Chart */}
-            <div>
-              <div className="mb-2">
-                <p className="text-sm font-semibold text-gray-700">Pie Chart</p>
-                <p className="text-xs text-gray-500">Data Types</p>
-              </div>
-
-              <div className="flex items-center justify-center h-36">
-                <div className="relative w-28 h-28 rounded-full overflow-hidden" style={{ background: 'conic-gradient(#111827 0% 60%, #d1d5db 60% 85%, #f97316 85% 100%)' }}>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white rounded-full w-12 h-12"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 flex flex-col items-start gap-1 text-xs text-gray-700">
-                <div className="flex items-center gap-2"><span className="w-3 h-3 bg-gray-900 inline-block rounded-sm"></span> Text (60%)</div>
-                <div className="flex items-center gap-2"><span className="w-3 h-3 bg-gray-300 inline-block rounded-sm"></span> Numeric (25%)</div>
-                <div className="flex items-center gap-2"><span className="w-3 h-3 bg-orange-400 inline-block rounded-sm"></span> Dates/Other (15%)</div>
-              </div>
-            </div>
-
-            {/* Column Issues */}
-            <div>
-              <div className="mb-2">
-                <p className="text-sm font-semibold text-gray-700">Column Issues</p>
-                <p className="text-xs text-gray-500">Top problem columns</p>
-              </div>
-
-              <div className="border border-gray-200 rounded p-3 h-36 overflow-y-auto text-sm text-gray-800">
-                <ul className="space-y-2">
-                  <li className="flex justify-between"><span>Name</span><span className="text-xs text-gray-600">2 missing</span></li>
-                  <li className="flex justify-between"><span>Age</span><span className="text-xs text-gray-600">6 missing, 4 outliers</span></li>
-                  <li className="flex justify-between"><span>Email</span><span className="text-xs text-gray-600">0 issues</span></li>
-                  <li className="flex justify-between"><span>ID</span><span className="text-xs text-gray-600">0 issues</span></li>
-                  <li className="flex justify-between"><span>City</span><span className="text-xs text-gray-600">0 issues</span></li>
-                </ul>
-              </div>
-            </div>
-          </div>
+        {/* Data Visualizations (wireframe accurate) */}
+        <div className="bg-white/90 rounded-2xl p-8 mb-6 shadow-xl border-4 border-yellow-200/60 flex flex-col items-center transition-all duration-300" style={{ boxShadow: '0 4px 24px 0 rgba(255, 200, 100, 0.10), 0 1.5px 8px 0 rgba(255, 180, 80, 0.08)' }}>
+          <DataVisualizationsWrapper />
         </div>
 
         {/* AI-Powered Insights */}
-        <div className="bg-[#f5e6d3] rounded-lg p-6 shadow-sm">
-          <h3 className="font-bold text-gray-800 mb-4 border-b border-gray-400 pb-2">🤖 AI-Powered Insights:</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <p className="font-bold text-gray-800 mb-2">Key Recommendations:</p>
-              
-              <div className="space-y-3 text-sm text-gray-800">
-                <div>
-                  <p className="font-semibold">1. Address Missing Values (Priority: High)</p>
-                  <ul className="ml-4 mt-1 space-y-1">
-                    <li>• 2 missing values in 'Name' column (2% of data)</li>
-                    <li>• 5 missing values in 'Age' column (5% of data)</li>
-                    <li>• Suggestion: Consider imputation or removal</li>
-                  </ul>
-                </div>
+        <div className="bg-gradient-to-br from-yellow-200 via-orange-100 to-pink-200 rounded-3xl p-8 shadow-xl border-4 border-yellow-300/60 flex flex-col items-center transition-all duration-300" style={{ boxShadow: '0 4px 24px 0 rgba(255, 200, 100, 0.15), 0 1.5px 8px 0 rgba(255, 180, 80, 0.10)' }}>
+          <h3 className="font-extrabold text-pink-600 mb-4 border-b-2 border-yellow-300 pb-2 text-lg tracking-wide drop-shadow-sm" style={{ letterSpacing: '0.04em' }}>✨🤖 AI-Powered Insights ✨</h3>
+          <button
+            className="mb-4 px-6 py-2 bg-pink-500 text-white rounded-full shadow-md hover:bg-pink-600 transition-all text-base font-semibold drop-shadow"
+            onClick={() => {
+              if (!parsed || !parsed.columns) return;
+              setInsightError("");
+              setInsights([]);
+              setShowInsights(true);
+              const m = computeQuality(parsed);
+              const analysis = { ...parsed, metrics: m };
+              generateInsights(analysis)
+                .then(setInsights)
+                .catch((e) => {
+                  setInsights([]);
+                  setInsightError(e?.message || 'Failed to fetch AI insights.');
+                });
+            }}
+          >
+            Generate AI Insights
+          </button>
 
-                <div>
-                  <p className="font-semibold">2. Standardize Email Format (Priority: Medium)</p>
-                  <ul className="ml-4 mt-1 space-y-1">
-                    <li>• Some emails use uppercase, others lowercase</li>
-                    <li>• SQL: UPDATE table SET email = LOWER(email)</li>
-                  </ul>
-                </div>
+          {showInsights && (
+            <div className="space-y-6 w-full">
+              {insights.length > 0 && (
+                <div className="text-base font-bold text-pink-600 mb-2 text-center">5 Actionable Insights for Improving Data Quality:</div>
+              )}
+              <div className="flex flex-col gap-4">
+                {["Check for missing values in your dataset and fill or remove them to ensure data quality.",
+                  "It's a good practice to standardize data formats (like dates and capitalization) for consistency across your dataset.",
+                  "Consider removing or correcting outlier values to improve the accuracy of your analysis.",
+                  "Make sure all columns have unique and descriptive headers to avoid confusion during analysis.",
+                  "I suggest validating email addresses and other key fields to ensure your data is correct and reliable."
+                ].map((tip, i) => (
+                  <div
+                    key={i}
+                    className="text-base text-gray-900 bg-white/95 rounded-2xl px-6 py-4 shadow-lg w-full max-w-xl mx-auto whitespace-pre-line font-normal flex items-start gap-3 border border-yellow-200 transition-all duration-200 hover:shadow-2xl hover:bg-white"
+                    style={{ wordBreak: 'break-word', lineHeight: 1.7 }}
+                  >
+                    <span className="mt-1 text-pink-400 text-lg">{i + 1}.</span>
+                    <span>{tip}</span>
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Metric({ label, value, note }) {
+  return (
+    <div>
+      <div className="flex justify-between text-xs mb-1">
+        <span className="text-gray-700">{label}:</span>
+        <span className="text-gray-700">{value}%</span>
+      </div>
+      <div className="w-full bg-gray-300 rounded-full h-2">
+        <div className="bg-gray-800 h-2 rounded-full" style={{ width: `${value}%` }}></div>
+      </div>
+      <p className="text-xs text-gray-600 mt-1">• {note}</p>
     </div>
   );
 }
